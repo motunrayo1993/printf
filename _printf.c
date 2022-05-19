@@ -1,4 +1,6 @@
 #include "main.h"
+#include <stdarg.h>
+#include <stddef.h>
 
 /**
  * _printf - prints and input into the standard output 
