@@ -1,47 +1,49 @@
-#include <stdarg.h>
 #include "main.h"
-#include <stddef.h>
 
 /**
- * _printf - Recreate behavior of printf function
- * @format: format string
- * Return: value of printed chars
+ * _printf - prints and input into the standard output 
+ * @format: the format string
+ *
+ * Return: number of bytes printed
  */
-
 int _printf(const char *format, ...)
 {
-	int (*pfunc)(va_list, flags_t *);
-  va_list args;
-	const char *ptr;
-	flags_t flags = {0, 0, 0};
+	int sum = 0;
+	va_list ap;
+	char *p, *start;
+	params_t params = PARAMS_INIT;
 
-	register int sum = 0;
+	va_start(ap, format);
 
-	va_start(args, format);
-	if (!format || (format[0] == '%' && !format[1]))
+	if (!format || (format[0] == '%' && !format[1]))/* checking for NULL character*/
 		return (-1);
 	if (format[0] == '%' && format[1] == ' ' && !format[2])
 		return (-1);
-	for (a = format; *ptr; a++)
+	for (p = (char *)format; *p; p++)
 	{
-		if (*ptr == '%')
+		init_params(&params, ap);
+		if (*p != '%')/*checking for the % specifier*/
 		{
-			a++;
-			if (*ptr == '%')
-			{
-				sum += _putchar('%');
-				continue;
-			}
-			while (get_flag(*ptr, &flags))
-				a++;
-			pfunc = get_print(*ptr);
-			sum += (pfunc)
-				  pfunc(args, &flags)
-				  _printf("%%%c", *ptr);
-		} else
 			sum += _putchar(*p);
+			continue;
+		}
+		start = p;
+		p++;
+		while (get_flag(p, &params)) /* while char at p is flag char */
+		{
+			p++; /* next char */
+		}
+		p = get_width(p, &params, ap);
+		p = get_precision(p, &params, ap);
+		if (get_modifier(p, &params))
+			p++;
+		if (!get_specifier(p))
+			sum += print_from_to(start, p,
+				params.l_modifier || params.h_modifier ? p - 1 : 0);
+		else
+			sum += get_print_func(p, ap, &params);
 	}
-	_putchar(-1);
-	va_end(args);
+	_putchar(BUF_FLUSH);
+	va_end(ap);
 	return (sum);
 }
